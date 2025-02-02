@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Live Code Previewer</title>
+  <style>
+    /* Reset styles */
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { 
+      font-family: Arial, sans-serif; 
+      background-color: #f4f4f4; 
+      text-align: center; 
+      overflow: hidden; /* Hide scrollbars */
+    }
+
+    /* Button Container */
+    .nav-buttons { 
+      position: fixed; 
+      top: 10px; 
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex; 
+      gap: 10px; 
+      z-index: 1000;
+    }
+
+    /* Default Button Styles */
+    .nav-buttons button {
+      padding: 8px 16px;
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      color: white;
+      font-size: 14px;
+      font-weight: bold;
+      border-radius: 20px;
+      cursor: pointer;
+      transition: all 0.3s ease-in-out;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    /* Default Background Color for CSS and JS Buttons */
+    #cssBtn, #jsBtn {
+      background: rgba(0, 123, 255, 0.7); /* Custom background for CSS and JS */
+    }
+
+    /* Custom Background Color for HTML Button with black text */
+    #htmlBtn {
+      background: linear-gradient(45deg, yellow, orange); /* Gradient for HTML */
+      color: black; /* Black text for HTML */
+    }
+
+    /* Hover Effects */
+    .nav-buttons button:hover {
+      background: rgba(255, 255, 255, 0.3);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    }
+
+    /* Active Click Effect */
+    .nav-buttons button:active {
+      transform: scale(0.95);
+    }
+
+    /* Fullscreen Preview */
+    #preview {
+      position: absolute;
+      top: 50px; /* Leave space for buttons */
+      left: 0;
+      width: 100vw;
+      height: calc(100vh - 50px); /* Adjust preview to fit screen */
+      border: none;
+      background-color: white;
+    }
+
+    /* Horizontal Line Below Buttons */
+    .line {
+      position: fixed;
+      top: 50px; /* Position line under buttons */
+      left: 0;
+      width: 100%;
+      height: 2px;
+      background-color: #ddd; /* Light gray line */
+    }
+
+    /* Remove Transparent Effect after Button Click */
+    .nav-buttons button.clicked {
+      border: 1px solid rgba(255, 255, 255, 0.2) !important; /* Match border with background */
+    }
+
+  </style>
+</head>
+<body>
+
+  <!-- Buttons for Code Input -->
+  <div class="nav-buttons">
+    <button id="htmlBtn">HTML</button>
+    <button id="cssBtn">CSS</button>
+    <button id="jsBtn">JS</button>
+  </div>
+
+  <!-- Horizontal Line Under Buttons -->
+  <div class="line"></div>
+
+  <!-- Preview Area -->
+  <iframe id="preview"></iframe>
+
+  <script>
+    // Get button & preview frame references
+    const htmlBtn = document.getElementById("htmlBtn");
+    const cssBtn = document.getElementById("cssBtn");
+    const jsBtn = document.getElementById("jsBtn");
+    const previewFrame = document.getElementById("preview");
+    const buttons = document.querySelectorAll(".nav-buttons button");
+
+    // Variables to store separate code blocks
+    let htmlCode = "";
+    let cssCode = "";
+    let jsCode = "";
+
+    // Function to update preview
+    function updatePreview() {
+      previewFrame.srcdoc = `
+        <!DOCTYPE html>
+        <html lang="en">
+        <head>
+          <meta charset="UTF-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <title>Preview</title>
+          <style>${cssCode}</style>
+        </head>
+        <body>
+          ${htmlCode}
+          <script>${jsCode}<\/script>
+        </body>
+        </html>
+      `;
+    }
+
+    // HTML button press karte hi auto-detect code
+    htmlBtn.addEventListener("click", () => {
+      navigator.clipboard.readText().then(text => {
+        if (text.includes("<style>") || text.includes("<script>")) {
+          htmlCode = text;
+          cssCode = "";
+          jsCode = "";
+        } else {
+          htmlCode = text;
+        }
+        updatePreview();
+
+        // Add clicked class to prevent transparency and change background color for CSS/JS buttons
+        htmlBtn.classList.add("clicked");  // Keep HTML button's gradient intact
+        cssBtn.classList.remove("clicked"); // Remove any click effect from CSS
+        jsBtn.classList.remove("clicked");  // Remove any click effect from JS
+      });
+    });
+
+    // CSS and JS buttons manual input
+    cssBtn.addEventListener("click", async () => {
+      cssCode = await navigator.clipboard.readText();
+      updatePreview();
+      cssBtn.classList.add("clicked"); // Retain color after clicking
+      htmlBtn.classList.remove("clicked"); // Remove click effect from HTML
+      jsBtn.classList.remove("clicked");  // Remove any click effect from JS
+    });
+
+    jsBtn.addEventListener("click", async () => {
+      jsCode = await navigator.clipboard.readText();
+      updatePreview();
+      jsBtn.classList.add("clicked"); // Retain color after clicking
+      htmlBtn.classList.remove("clicked"); // Remove click effect from HTML
+      cssBtn.classList.remove("clicked");  // Remove click effect from CSS
+    });
+
+  </script>
+</body>
+</html>
